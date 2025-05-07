@@ -38,3 +38,42 @@ export const register=async(req,res)=>{
         })
     }
 };
+
+export const Login=async(req,res)=>{
+    const {email,password}=req.body;
+    if(!email || !password){
+        return res.json({
+            success:false,
+            message:"All fields are mondatory"
+        })
+    }
+    try {
+        const user=await User.findOne({email})
+
+        if(!user){
+            return res.json({
+                success:false,
+                message:"User Not found"
+            })
+        }
+        const hash=await bcrypt.compare(password,User.password);
+        if(!hash){
+            return res.json({
+                success:false,
+                message:"Incorrent Credentials"
+            })
+        }
+       const token=jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:'7d'})
+
+       res.cookie('token',token,{
+        httpOnly:true,
+        secure:process.env.NODE_ENV==='production',
+        sameSite:process.env.NODE_ENV==='production' ? 'None' : 'Strict'
+       })
+    } catch (error) {
+        return res.json({
+            success:false,
+            message:error.message
+        })
+    }
+};
