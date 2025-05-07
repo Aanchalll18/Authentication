@@ -303,4 +303,4 @@ export const sendVerifyOtp=async(req,res)=>{
     } catch (error) {
         
     }
-}
+};
