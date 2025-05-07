@@ -157,6 +157,8 @@ export const sendVerifyOtp=async(req,res)=>{
 export const verifyEmail=async(req,res)=>{
     try {
         const {userId,otp}=req.body;
+        const user=await User.findById(userId)
+
         if(!userId || !otp){
             return res.json({
                 success:false,
@@ -175,6 +177,14 @@ export const verifyEmail=async(req,res)=>{
                 message:"Otp Expired!"
             })
         }
+        user.isAccountVerified=true;
+        user.verifyotp='';
+        user.verifyOtpExpireAt=0;
+        await user.save()
+        return res.json({
+            success:false,
+            message:error.message
+        })
     } catch (error) {
         
     }
