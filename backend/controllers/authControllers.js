@@ -2,6 +2,7 @@ import User from "../models/userModel.js";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import transporter from "../config/nodemailer.js";
+import { trusted } from "mongoose";
 
 export const register = async (req, res) => {
     const { email, name, password } = req.body;
@@ -118,7 +119,7 @@ export const logout = async (req, res) => {
     }
 };
 
-export const sendVerifyOtp=async(req,res)=>{
+export const sendVerifyEmail=async(req,res)=>{
     try {
         const {userId}=req.body;
         const user=await User.findById(userId);
@@ -193,3 +194,113 @@ export const verifyEmail=async(req,res)=>{
        }) 
     }
 };
+
+export const isAuthenticated=async(req,res)=>{
+    try {
+        return res.json({success:true})
+    } catch (error) {
+        return res.json({success:false,message:error.message})
+    }
+};
+
+export const sendOtp=async(req,res)=>{
+    try {
+        const {email}=req.body;
+        if(!email){
+            return res.json({
+                success:false,
+                message:'All fields are required'
+            })
+        }
+        const user=await User.findOne({email})
+        if(!user){
+            return res.json({
+                success:false,
+                message:'User Not Found!'
+            })
+        }
+        const otp=String(Math.floor(100000 +Math.randow()*900000));
+        user.verifyOtp=otp;
+        user.resetOtpExpireAt=Date.now()+15*60*60*1000
+        await user.save();
+
+        const mailOptions={
+            from:process.env.SENDER_EMAIL,
+            to:user.email,
+            subject:'Password Reset Otp',
+            text:`Your Otp is ${otp}.Verify your account using this Otp`
+        }
+        await transporter.sendMail(mailOptions)
+        // if(otp==='' || user.otp !== otp){
+        //     return res.json({
+        //         success:false,
+        //         message:'Invalid Credentials'
+        //     })
+        // }
+        return res.json({
+            success:true,
+            message:'Otp sent successfully!'
+        })
+
+    } catch (error) {
+        console.log(error)
+        return res.json({
+            success:false,
+            message:'Failed to sent otp'
+        })
+    }
+};
+
+export const sendVerifyOtp=async(req,res)=>{
+    try {
+        const {email,otp,password}=req.body;
+        if(!email ||!otp || !password){
+            return res.json({
+                success:false,
+                message:'All fields are mandatory'
+            })
+        }
+        
+        const user=await User.findOne({email});
+        if(!user){
+            return res.json({
+                success:false,
+                message:'User not found!'
+            })
+        }
+        // const isMatch=await bcrypt.compare(password,user.password);
+        // if(!isMatch){
+        //     return res.json({
+        //         success:false,
+        //         message:'Incorrect Password'
+        //     })
+        // }
+        if(user.resetOtp===''|| user.resetOtp !== otp){
+            return res.json({
+                success:false,
+                message:'Invalid Otp'
+            })
+        }
+        if(user.resetOtpExpireAt < Date.now()){
+            return res.json({
+                success:false,
+                message:'Otp Expired!'
+            })
+        }
+        const handlePassword=await bcrypt.hash(newPassword,10)
+
+        user.password=hashedPassword;
+        user.resetOtp='';
+        user.resetOtpExpireAt=0;
+
+        await user.save();
+
+        return res.json({
+            success:true,
+            message:'Password has been reset Successfully!'
+        })
+
+    } catch (error) {
+        
+    }
+}
