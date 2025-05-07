@@ -1,6 +1,7 @@
 import User from "../models/userModel.js";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import transporter from "../config/nodemailer.js";
 
 export const register = async (req, res) => {
     const { email, name, password } = req.body;
@@ -32,6 +33,14 @@ export const register = async (req, res) => {
             sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
+
+            const mailOptions={
+                from:process.env.SENDER_EMAIL,
+                to:email,
+                Subject:`Welcome to AuthNest`,
+                text:`Welcome to AuthNest website.Your account has been created with email id:${email}`
+            }
+            await transporter.sendMail(mailOptions)
 
         res.status(201).json({ success: true, message: "User registered successfully" });
     } catch (error) {
@@ -108,3 +117,65 @@ export const logout = async (req, res) => {
         });
     }
 };
+
+export const sendVerifyOtp=async(req,res)=>{
+    try {
+        const {userId}=req.body;
+        const user=await User.findById(userId);
+        if(user.isAccountVerified){
+            return res.json({
+                success:false,
+                message:"Account Already Verified"
+            })
+        }
+        const otp=String(Math.floor(100000 + Math.random()*900000));
+
+        user.verifyotp=otp;
+        user.verifyOtpExpireAt=Date.now()+24*60*60*1000
+        await user.save()
+
+        const mailOptions={
+            from:process.env.SENDER_EMAIL,
+            to:user.email,
+            Subject:`Your OTP is ${otp}.verify your account using this OTP`
+        }
+        await transporter.sendMail(mailOptions)
+
+        res.json({
+            success:true,
+            message:'Verification OTP sent on Email'
+        })
+
+    } catch (error) {
+       res.json({
+        success:false,
+        message:error.message
+       }) 
+    }
+};
+
+export const verifyEmail=async(req,res)=>{
+    try {
+        const {userId,otp}=req.body;
+        if(!userId || !otp){
+            return res.json({
+                success:false,
+                message:"All fields are mandatory!"
+            })
+        }
+        if(user.verifyotp === '' || user.verifyotp !== otp){
+            return res.json({
+                success:false,
+                message:'Invalid Otp'
+            })
+        }
+        if(user.verifyOtpExpireAt< Date.now()){
+            return res.json({
+                success:false,
+                message:"Otp Expired!"
+            })
+        }
+    } catch (error) {
+        
+    }
+}
