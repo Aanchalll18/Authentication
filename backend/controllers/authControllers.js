@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import transporter from "../config/nodemailer.js";
 import { trusted } from "mongoose";
+import { text } from "express";
 
 export const register = async (req, res) => {
     const { email, name, password } = req.body;
@@ -119,9 +120,11 @@ export const logout = async (req, res) => {
     }
 };
 
-export const sendVerifyEmail=async(req,res)=>{
+export const sendVerifyOtp=async(req,res)=>{
     try {
-        const {userId}=req.body;
+        const userId = req.userId;
+
+        console.log(userId)
         const user=await User.findById(userId);
         if(user.isAccountVerified){
             return res.json({
@@ -138,7 +141,8 @@ export const sendVerifyEmail=async(req,res)=>{
         const mailOptions={
             from:process.env.SENDER_EMAIL,
             to:user.email,
-            Subject:`Your OTP is ${otp}.verify your account using this OTP`
+            subject:"OTP Verification",
+            text:`Your OTP is ${otp}.verify your account using this OTP`
         }
         await transporter.sendMail(mailOptions)
 
@@ -251,7 +255,7 @@ export const sendOtp=async(req,res)=>{
     }
 };
 
-export const sendVerifyOtp=async(req,res)=>{
+export const sendVerifyO=async(req,res)=>{
     try {
         const {email,otp,password}=req.body;
         if(!email ||!otp || !password){

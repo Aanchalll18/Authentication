@@ -12,7 +12,7 @@ const uAuth=async(req,res,next)=>{
         const decode=await jwt.verify(token,process.env.JWT_SECRET)
 
         if(decode.id){
-            req.body.userId=decode.id
+            req.userId=decode.id
         }else{
             return res.json({
                 success:false,
