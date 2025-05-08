@@ -7,7 +7,7 @@ const authUser=express.Router()
 authUser.post('/register',register);
 authUser.post('/login',Login)
 authUser.get('/logout',logout)
-authUser.post('/send-verify-otp',uAuth,sendVerifyEmail)
+authUser.post('/send-verify-email',uAuth,sendVerifyEmail)
 authUser.post('/verify-account',uAuth,verifyEmail)
 authUser.post('/is-auth',uAuth,isAuthenticated)
 
