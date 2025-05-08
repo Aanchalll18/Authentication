@@ -159,46 +159,60 @@ export const sendVerifyOtp=async(req,res)=>{
     }
 };
 
-export const verifyEmail=async(req,res)=>{
+export const verifyEmail = async (req, res) => {
     try {
-        const {userId,otp}=req.body;
-        const user=await User.findById(userId)
-
-        if(!userId || !otp){
-            return res.json({
-                success:false,
-                message:"All fields are mandatory!"
-            })
-        }
-        if(user.verifyotp === '' || user.verifyotp !== otp){
-            return res.json({
-                success:false,
-                message:'Invalid Otp'
-            })
-        }
-        if(user.verifyOtpExpireAt< Date.now()){
-            return res.json({
-                success:false,
-                message:"Otp Expired!"
-            })
-        }
-        user.isAccountVerified=true;
-        user.verifyotp='';
-        user.verifyOtpExpireAt=0;
-        await user.save()
+      const userId = req.userId;
+      const { otp } = req.body;
+  
+      if (!userId || !otp) {
         return res.json({
-            success:false,
-            message:error.message
-        })
+          success: false,
+          message: "All fields are mandatory!",
+        });
+      }
+  
+      const user = await User.findById(userId);
+  
+      if (!user) {
+        return res.json({
+          success: false,
+          message: "User not found",
+        });
+      }
+  
+      if (user.verifyotp === "" || user.verifyotp !== otp) {
+        return res.json({
+          success: false,
+          message: "Invalid Otp",
+        });
+      }
+  
+      if (user.verifyOtpExpireAt < Date.now()) {
+        return res.json({
+          success: false,
+          message: "Otp Expired!",
+        });
+      }
+  
+      user.isAccountVerified = true;
+      user.verifyotp = "";
+      user.verifyOtpExpireAt = 0;
+      await user.save();
+  
+      return res.json({
+        success: true,
+        message: "Email verified successfully",
+      });
+  
     } catch (error) {
-       console.log(error);
-       return res.json({
-        success:false,
-        message:error.message
-       }) 
+      console.log(error);
+      return res.json({
+        success: false,
+        message: error.message,
+      });
     }
 };
-
+  
 export const isAuthenticated=async(req,res)=>{
     try {
         return res.json({success:true})
@@ -207,7 +221,7 @@ export const isAuthenticated=async(req,res)=>{
     }
 };
 
-export const sendOtp=async(req,res)=>{
+export const sendResetOtp=async(req,res)=>{
     try {
         const {email}=req.body;
         if(!email){
@@ -255,10 +269,10 @@ export const sendOtp=async(req,res)=>{
     }
 };
 
-export const sendVerifyO=async(req,res)=>{
+export const resetPassword=async(req,res)=>{
     try {
-        const {email,otp,password}=req.body;
-        if(!email ||!otp || !password){
+        const {email,otp,newpassword}=req.body;
+        if(!email ||!otp || !newpassword){
             return res.json({
                 success:false,
                 message:'All fields are mandatory'
@@ -272,13 +286,6 @@ export const sendVerifyO=async(req,res)=>{
                 message:'User not found!'
             })
         }
-        // const isMatch=await bcrypt.compare(password,user.password);
-        // if(!isMatch){
-        //     return res.json({
-        //         success:false,
-        //         message:'Incorrect Password'
-        //     })
-        // }
         if(user.resetOtp===''|| user.resetOtp !== otp){
             return res.json({
                 success:false,
