@@ -215,6 +215,7 @@ export const verifyEmail = async (req, res) => {
   
 export const isAuthenticated=async(req,res)=>{
     try {
+        const token = req.cookies.token;
         return res.json({success:true})
     } catch (error) {
         return res.json({success:false,message:error.message})

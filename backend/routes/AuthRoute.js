@@ -9,7 +9,7 @@ authUser.post('/login',Login)
 authUser.get('/logout',logout)
 authUser.post('/send-verify-otp',uAuth,sendVerifyOtp)
 authUser.post('/verify-account',uAuth,verifyEmail)
-authUser.post('/is-auth',uAuth,isAuthenticated);
+authUser.get('/is-auth',uAuth,isAuthenticated);
 authUser.post('/send-reset-otp',sendResetOtp);
 authUser.post('/reset-otp',resetPassword)
 
