@@ -1,15 +1,52 @@
-import React, { useState} from "react";
+import React, { useContext, useState} from "react";
 import { useNavigate } from "react-router-dom";
-
+import axios from 'axios'
 import { assets } from "../assets/assets";
+import { AppContent } from "../context/AppContext";
+import toast from "react-hot-toast";
 
 const Login = () => {
 
 	const navigate=useNavigate()
+
+	const {backendUrl,setisLoggedIn}=useContext(AppContent)
+
 	const [state, setState] = useState("Sign Up");
 	const [name,setName]=useState('');
 	const [email,setEmail]=useState('')
 	const [password,setPassword]=useState('')
+
+	const onSubmitHandler=async(e)=>{
+		try {
+			e.preventDefault();
+			axios.defaults.withCredentials = true;
+
+			if(state=== 'Sign Up'){
+				const {data}=await axios.post(backendUrl + '/api/auth/register',{name,email,password})
+
+				if(data.success){
+					setisLoggedIn(true)
+					navigate('/')
+					toast.success(data.message)
+				}else{
+					toast.error(data.message)
+				}
+			}else{
+				const {data}=await axios.post(backendUrl + '/api/auth/login',{email,password})
+
+				if(data.success){
+					setisLoggedIn(true)
+					navigate('/')
+					toast.success(data.message)
+				}else{
+					toast.error(data.message)
+				}
+			}
+		} catch (error) {
+			console.log(error)
+			toast.error(error.message)
+		}
+	}
 
 	return (
 		<div className="flex items-center justify-center min-h-screen px-6 sm:px-0 bg-gradient-to-br from-blue-200 to-purple-400">
@@ -28,7 +65,7 @@ const Login = () => {
 						? "Create your account"
 						: "Login to your account"}
 				</p>
-				<form>
+				<form onSubmit={onSubmitHandler}>
 					{state === "Sign Up" && (
 						<div 
 						className="mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]">
@@ -45,7 +82,7 @@ const Login = () => {
 					<div className="mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]">
 						<img src={assets.mail_icon} />
 						<input onChange={e=>setEmail(e.target.value)}
-							key={email}
+							value={email}
 							className="bg-transparent outline-none"
 							type="email"
 							placeholder="Email"
@@ -54,7 +91,7 @@ const Login = () => {
 					<div className="mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]">
 						<img src={assets.lock_icon} />
 						<input onChange={e=>setPassword(e.target.value)}
-							key={password}
+							value={password}
 							className="bg-transparent outline-none"
 							type="password"
 							placeholder="password"

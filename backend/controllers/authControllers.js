@@ -2,11 +2,11 @@ import User from "../models/userModel.js";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import transporter from "../config/nodemailer.js";
-import { trusted } from "mongoose";
-import { text } from "express";
+
 
 export const register = async (req, res) => {
     const { email, name, password } = req.body;
+    console.log(email)
     if (!email || !password || !name) {
         return res.status(400).json({
             success: false,
