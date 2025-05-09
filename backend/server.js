@@ -12,7 +12,6 @@ const app=express();
 const port=process.env.PORT || 5500;
 
 
-
 connectDb();
 
 const allowedOrigins=['http://localhost:5173']
@@ -21,14 +20,8 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.use(cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true)
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true
+    origin: allowedOrigins, // DO NOT use '*'
+    credentials: true,
   }));
 
 app.get("/",(req,res)=>{
