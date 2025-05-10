@@ -68,7 +68,7 @@ const Navbar = () => {
 						>
 							Verify Email
 						</li>
-						<li onClick={logout}
+						<li onClick={handleLogout}
 							className="py-1 px-2 hover:bg-gray-200 cursor-pointer"
 							
 						>

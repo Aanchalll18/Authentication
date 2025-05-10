@@ -1,5 +1,4 @@
-// src/pages/ResetPassword.jsx
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
 import { AppContent } from "../context/AppContext";
@@ -15,22 +14,23 @@ const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [isEmail, setIsEmail] = useState(false);
   const [otp, setOtp] = useState("");
-  const [isotpSubmited, setOtpSubmited] = useState(false);
+  const [isOtpSubmitted, setOtpSubmitted] = useState(false);
 
-  const inputrefs = React.useRef([]);
+  const inputRefs = useRef([]);
 
   useEffect(() => {
     if (isEmail) {
-      inputrefs.current = Array(6).fill(null);
+      inputRefs.current = Array(6).fill(null);
     }
   }, [isEmail]);
 
   const handleInput = (e, index) => {
     const value = e.target.value;
     if (value && index < 5) {
-      inputrefs.current[index + 1]?.focus();
+      inputRefs.current[index + 1]?.focus();
     }
-    const currentOtp = inputrefs.current.map((input) => input?.value).join("");
+
+    const currentOtp = inputRefs.current.map((input) => input?.value).join("");
     setOtp(currentOtp);
   };
 
@@ -45,31 +45,30 @@ const ResetPassword = () => {
     }
   };
 
-  const handleOtpSubmit = (e) => {
-  e.preventDefault();
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    const otpValue = otp.trim(); // Trim the OTP value to avoid empty spaces
 
-  const otparray = inputrefs.current.map((el) => el?.value || ""); // safe access
-  const joinedOtp = otparray.join("");
+   
 
-
-
-  setOtp(joinedOtp);
-  setOtpSubmited(true);
-};
-
+    console.log("OTP Captured:", otpValue);
+    setOtp(otpValue);
+    setOtpSubmitted(true);
+  };
 
   const onSubmitNewPassword = async (e) => {
     e.preventDefault();
-
-    try {
-      const { data } = await axios.post(backendUrl + '/api/auth/reset-password', {
+      try {
+      const { data } = await axios.post(`${backendUrl}/api/auth/reset-password`, {
         email,
         otp,
-        newpassword: password, 
+        newpassword: password,
       });
+
       data.success ? toast.success(data.message) : toast.error(data.message);
       if (data.success) navigate('/login');
     } catch (error) {
+      console.error("Error resetting password:", error);
       toast.error(error.message);
     }
   };
@@ -106,7 +105,7 @@ const ResetPassword = () => {
       )}
 
       {/* OTP Form */}
-      {!isotpSubmited && isEmail && (
+      {!isOtpSubmitted && isEmail && (
         <form onSubmit={handleOtpSubmit} className="bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm">
           <h1 className="text-white text-2xl font-semibold text-center mb-4">Reset password OTP</h1>
           <p className="text-center mb-6 text-indigo-300">Enter the 6-digit code sent to your email</p>
@@ -118,7 +117,7 @@ const ResetPassword = () => {
                 key={index}
                 required
                 className="w-12 h-12 bg-[#333A5C] text-white text-center text-xl rounded-md"
-                ref={(el) => (inputrefs.current[index] = el)}
+                ref={(el) => (inputRefs.current[index] = el)}
                 onInput={(e) => handleInput(e, index)}
               />
             ))}
@@ -130,7 +129,7 @@ const ResetPassword = () => {
       )}
 
       {/* New Password Form */}
-      {isotpSubmited && isEmail && (
+      {isOtpSubmitted && isEmail && (
         <form onSubmit={onSubmitNewPassword} className="bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm">
           <h1 className="text-white text-2xl font-semibold text-center mb-4">New Password</h1>
           <p className="text-center mb-6 text-indigo-300">Enter your new password</p>
