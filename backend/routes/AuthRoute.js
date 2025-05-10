@@ -11,6 +11,6 @@ authUser.post('/send-verify-otp',uAuth,sendVerifyOtp)
 authUser.post('/verify-account',uAuth,verifyEmail)
 authUser.get('/is-auth',uAuth,isAuthenticated);
 authUser.post('/send-reset-otp',sendResetOtp);
-authUser.post('/reset-otp',resetPassword)
+authUser.post('/reset-password',resetPassword)
 
 export default authUser;
